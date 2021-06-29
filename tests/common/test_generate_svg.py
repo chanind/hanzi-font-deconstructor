@@ -1,5 +1,5 @@
-from hanzi_font_deconstructor.TransformedStroke import TransformedStroke
-from hanzi_font_deconstructor.generate_svg import generate_svg
+from hanzi_font_deconstructor.common.TransformedStroke import TransformedStroke
+from hanzi_font_deconstructor.common.generate_svg import generate_svg
 
 def test_generate_svg(snapshot):
     strokes = [

@@ -1,7 +1,16 @@
-from os import path
+from hanzi_font_deconstructor.common.generate_svg import generate_svg
+from hanzi_font_deconstructor.common.transform_stroke import transform_stroke
+from os import path, makedirs
+from pathlib import Path
+import shutil
+import random
 import re
+import argparse
 
-GLYPH_SVGS_DIR = path.join(path.dirname(__file__), "../noto_glyphs")
+PROJECT_ROOT = Path(__file__).parents[2]
+
+GLYPH_SVGS_DIR = PROJECT_ROOT / "noto_glyphs"
+DEST_FOLDER = PROJECT_ROOT / "data"
 
 # https://en.wikipedia.org/wiki/Stroke_(CJK_character)
 SINGLE_STROKE_CHARS = [
@@ -80,7 +89,6 @@ SINGLE_STROKE_CHAR_PATHS = []
 path_extractor = re.compile(r'\bd="([^"]+)"')
 for char in SINGLE_STROKE_CHARS:
     char_file = get_file_for_char(char)
-    print(char, char_file)
     with open(char_file, "r") as contents:
         char_svg = contents.read().replace("\n", "")
     path_match = path_extractor.search(char_svg)
@@ -93,5 +101,32 @@ SINGLE_STROKE_PATHS = MISC_SINGLE_STROKE_PATHS + SINGLE_STROKE_CHAR_PATHS
 TARGET_IMG_SIZE_PX = 512
 
 
-def get_training_img(max_strokes=5):
-    return None
+def get_training_img_strokes(max_strokes=5):
+    num_strokes = random.randint(1, max_strokes)
+    rand_stroke_pathstrings = [random.choice(SINGLE_STROKE_PATHS) for _ in range(num_strokes)]
+    transformed_strokes = [transform_stroke(pathstr, STROKE_VIEW_BOX) for pathstr in rand_stroke_pathstrings]
+    return transformed_strokes
+
+parser = argparse.ArgumentParser(description='Generate training data for a model to deconstruct hanzi into strokes')
+parser.add_argument('--max-strokes-per-img', default=5, type=int)
+parser.add_argument('--total-images', default=10000, type=int)
+args = parser.parse_args()
+
+if __name__ == "__main__":
+    # create and empty the dest folder
+    if path.exists(DEST_FOLDER):
+        shutil.rmtree(DEST_FOLDER)
+    makedirs(DEST_FOLDER)
+
+    # create the data
+    for i in range(args.total_images):
+        training_strokes = get_training_img_strokes(args.max_strokes_per_img)
+        label = f"{i}-{len(training_strokes)}"
+        with open(DEST_FOLDER / f"{label}.svg", "w") as img_file:
+            img_file.write(generate_svg(training_strokes, STROKE_VIEW_BOX))
+        if i % 1000 == 0:
+            print(f'written {i} / {args.total_images}')
+    print('Done!')
+
+
+

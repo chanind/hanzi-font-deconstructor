@@ -1,9 +1,0 @@
-# name: test_generate_svg
-  '
-  <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="-10 0 1010 1000">
-  <path fill="currentColor" d="M703 378l-64 21c-8 -47 -32 -118 -53 -173l61 -18c23 54 47 124 56 170z"transform="  rotate(-3)  translate(12, 12)  skewX(3)  skewY(-1)" />
-  <path fill="currentColor" d="M849 191l65 19c-32 75 -76 163 -113 220c-13 -9 -43 -23 -60 -30c40 -56 81 -137 108 -209z"transform="  rotate(-3)  translate(-2, -2)  skewX(-12)  skewY(0)" />
-  </svg>
-  '
----
