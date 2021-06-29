@@ -1,0 +1,8 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="-10 0 1010 1000">
+   <path fill="currentColor"
+d="M813 156h-595v102h595v-102zM887 323h-669v59c0 170 -15 413 -117 576c-14 -12 -47 -32 -65 -38c100 -157 108 -378 108 -538v-291h743v232zM470 487v105h199v-105h-199zM838 663l56 38c-47 36 -108 74 -159 101c61 45 135 76 223 94c-17 15 -36 42 -46 62
+c-177 -45 -304 -147 -372 -301h-138v204l215 -48c-3 18 -5 47 -3 62c-250 61 -282 70 -301 83c-3 -18 -19 -49 -29 -63c18 -10 48 -32 48 -76v-162h-108v-65h176v-105h-149v-64h149v-90h70v90h199v-90h70v90h168v64h-168v105h208v65h-338c21 39 47 75 80 106
+c50 -30 112 -70 149 -100z" />
+</svg>
