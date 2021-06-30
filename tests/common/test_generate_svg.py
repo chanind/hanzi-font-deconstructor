@@ -1,5 +1,5 @@
 from hanzi_font_deconstructor.common.TransformedStroke import TransformedStroke
-from hanzi_font_deconstructor.common.generate_svg import generate_svg
+from hanzi_font_deconstructor.common.generate_svg import generate_svg, get_stroke_attrs
 
 def test_generate_svg(snapshot):
     strokes = [
@@ -20,4 +20,5 @@ def test_generate_svg(snapshot):
             path="M849 191l65 19c-32 75 -76 163 -113 220c-13 -9 -43 -23 -60 -30c40 -56 81 -137 108 -209z",
         )
     ]
-    assert generate_svg(strokes, (-10, 0, 1010, 1000)) == snapshot
+    strokes_attrs = [get_stroke_attrs(stroke) for stroke in strokes]
+    assert generate_svg(strokes_attrs, (-10, 0, 1010, 1000)) == snapshot
