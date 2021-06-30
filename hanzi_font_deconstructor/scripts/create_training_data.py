@@ -1,4 +1,5 @@
-from hanzi_font_deconstructor.common.generate_svg import generate_svg
+from dataclasses import asdict
+from hanzi_font_deconstructor.common.generate_svg import generate_svg, get_stroke_attrs
 from hanzi_font_deconstructor.common.transform_stroke import transform_stroke
 from os import path, makedirs
 from pathlib import Path
@@ -6,6 +7,7 @@ import shutil
 import random
 import re
 import argparse
+import json
 
 PROJECT_ROOT = Path(__file__).parents[2]
 
@@ -117,15 +119,27 @@ if __name__ == "__main__":
     if path.exists(DEST_FOLDER):
         shutil.rmtree(DEST_FOLDER)
     makedirs(DEST_FOLDER)
+    makedirs(DEST_FOLDER / "sample_svgs")
 
     # create the data
+    data = {
+        'viewbox': STROKE_VIEW_BOX,
+        'imgs': [],
+    }
     for i in range(args.total_images):
         training_strokes = get_training_img_strokes(args.max_strokes_per_img)
-        label = f"{i}-{len(training_strokes)}"
-        with open(DEST_FOLDER / f"{label}.svg", "w") as img_file:
-            img_file.write(generate_svg(training_strokes, STROKE_VIEW_BOX))
+        strokes_attrs = [get_stroke_attrs(stroke) for stroke in training_strokes]
+        data['imgs'].append({
+            'strokes': [asdict(attrs) for attrs in strokes_attrs]
+        })
+        if i % 100 == 0:
+            label = f"{i}-{len(training_strokes)}"
+            with open(DEST_FOLDER / "sample_svgs" / f"{label}.svg", "w") as img_file:
+                img_file.write(generate_svg(strokes_attrs, STROKE_VIEW_BOX))      
         if i % 1000 == 0:
             print(f'written {i} / {args.total_images}')
+    with open(DEST_FOLDER / "data.json", "w") as output_json_file:
+        json.dump(data, output_json_file, indent=2, ensure_ascii=False)
     print('Done!')
 
 

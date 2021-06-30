@@ -7,6 +7,8 @@ name = "pypi"
 svgwrite = "1.4.1"
 numpy = "1.21.0"
 svgpathtools = "1.4.1"
+pillow = "8.2.0"
+cairosvg = "2.5.2"
 
 [dev-packages]
 pytest = "6.2.4"
