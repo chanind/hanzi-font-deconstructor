@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+
 @dataclass
 class TransformedStroke:
     translate: Tuple[float, float]

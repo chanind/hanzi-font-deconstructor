@@ -28,12 +28,14 @@ def get_stroke_attrs(stroke: TransformedStroke) -> StrokeAttrs:
     return StrokeAttrs(
         d=stroke.path,
         transform=(
-            " ".join([
-                f"translate({stroke.translate[0]}, {stroke.translate[1]})",
-                f"rotate({stroke.rotate})",
-                f"skewX({stroke.skewX})",
-                f"skewY({stroke.skewY})",
-                f"scale({stroke.scale[0]}, {stroke.scale[1]})",
-            ])
+            " ".join(
+                [
+                    f"translate({stroke.translate[0]}, {stroke.translate[1]})",
+                    f"rotate({stroke.rotate})",
+                    f"skewX({stroke.skewX})",
+                    f"skewY({stroke.skewY})",
+                    f"scale({stroke.scale[0]}, {stroke.scale[1]})",
+                ]
+            )
         ),
     )

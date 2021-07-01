@@ -83,8 +83,13 @@ MISC_SINGLE_STROKE_PATHS = [
 
 def get_training_img_strokes(max_strokes=5):
     num_strokes = random.randint(1, max_strokes)
-    rand_stroke_pathstrings = [random.choice(SINGLE_STROKE_PATHS) for _ in range(num_strokes)]
-    transformed_strokes = [transform_stroke(pathstr, STROKE_VIEW_BOX) for pathstr in rand_stroke_pathstrings]
+    rand_stroke_pathstrings = [
+        random.choice(SINGLE_STROKE_PATHS) for _ in range(num_strokes)
+    ]
+    transformed_strokes = [
+        transform_stroke(pathstr, STROKE_VIEW_BOX)
+        for pathstr in rand_stroke_pathstrings
+    ]
     return transformed_strokes
 
 
@@ -108,6 +113,7 @@ SINGLE_STROKE_PATHS = MISC_SINGLE_STROKE_PATHS + SINGLE_STROKE_CHAR_PATHS
 
 tensorify = transforms.ToTensor()
 
+
 def img_to_greyscale_tensor(img):
     return tensorify(img)[3, :, :]
 
@@ -122,13 +128,15 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
 
         stroke_svgs = [generate_svg([stroke_attrs]) for stroke_attrs in strokes_attrs]
         stroke_imgs = [svg_to_pil(stroke_svg) for stroke_svg in stroke_svgs]
-        stroke_tensors = [img_to_greyscale_tensor(stroke_img) for stroke_img in stroke_imgs]
-        stroke_masks = [torch.where(stroke_tensor > mask_threshold, 1, 0) for stroke_tensor in stroke_tensors]
+        stroke_tensors = [
+            img_to_greyscale_tensor(stroke_img) for stroke_img in stroke_imgs
+        ]
+        stroke_masks = [
+            torch.where(stroke_tensor > mask_threshold, 1, 0)
+            for stroke_tensor in stroke_tensors
+        ]
         mask = torch.zeros(input_tensor.shape, dtype=torch.int)
         for stroke_mask in stroke_masks:
             mask += stroke_mask
-    
+
         return (input_tensor, mask)
-
-
-    
