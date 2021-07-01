@@ -1,8 +1,8 @@
 # name: test_generate_svg
   '
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="-10 0 1010 1000">
-  <path d="M703 378l-64 21c-8 -47 -32 -118 -53 -173l61 -18c23 54 47 124 56 170z" transform= translate(12, 134) rotate(-3) skewX(3) skewY(-1) scale(0.3, 1.7) />
-  <path d="M849 191l65 19c-32 75 -76 163 -113 220c-13 -9 -43 -23 -60 -30c40 -56 81 -137 108 -209z" transform= translate(-2, 232) rotate(-3) skewX(-12) skewY(0) scale(1, 0.9) />
+  <path d="M703 378l-64 21c-8 -47 -32 -118 -53 -173l61 -18c23 54 47 124 56 170z" transform="translate(12, 134) rotate(-3) skewX(3) skewY(-1) scale(0.3, 1.7)" />
+  <path d="M849 191l65 19c-32 75 -76 163 -113 220c-13 -9 -43 -23 -60 -30c40 -56 81 -137 108 -209z" transform="translate(-2, 232) rotate(-3) skewX(-12) skewY(0) scale(1, 0.9)" />
   </svg>
   '
 ---
