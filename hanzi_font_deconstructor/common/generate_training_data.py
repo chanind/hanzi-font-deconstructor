@@ -145,3 +145,20 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
             mask += stroke_mask
 
         return (input_tensor, mask)
+
+
+class RandomStrokesDataset(torch.utils.data.IterableDataset):
+    def __init__(self, total_samples: int, max_strokes=5, size_px=512):
+        super()
+        self.total_samples = total_samples
+        self.max_strokes = max_strokes
+        self.size_px = size_px
+
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        num_workers = worker_info.num_workers if worker_info else 1
+        total_per_worker = int(self.total_samples / num_workers)
+        for _ in range(total_per_worker):
+            yield get_training_input_and_mask_tensors(
+                max_strokes=self.max_strokes, size_px=self.size_px
+            )
