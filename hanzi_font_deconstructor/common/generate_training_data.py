@@ -126,8 +126,13 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
         input_img = svg_to_pil(input_svg, size_px, size_px)
         input_tensor = img_to_greyscale_tensor(input_img)
 
-        stroke_svgs = [generate_svg([stroke_attrs]) for stroke_attrs in strokes_attrs]
-        stroke_imgs = [svg_to_pil(stroke_svg) for stroke_svg in stroke_svgs]
+        stroke_svgs = [
+            generate_svg([stroke_attrs], STROKE_VIEW_BOX)
+            for stroke_attrs in strokes_attrs
+        ]
+        stroke_imgs = [
+            svg_to_pil(stroke_svg, size_px, size_px) for stroke_svg in stroke_svgs
+        ]
         stroke_tensors = [
             img_to_greyscale_tensor(stroke_img) for stroke_img in stroke_imgs
         ]
