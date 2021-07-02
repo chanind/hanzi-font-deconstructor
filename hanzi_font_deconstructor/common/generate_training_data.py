@@ -166,3 +166,6 @@ class RandomStrokesDataset(torch.utils.data.IterableDataset):
                 "image": input,
                 "mask": mask,
             }
+
+    def __len__(self):
+        return self.total_samples
