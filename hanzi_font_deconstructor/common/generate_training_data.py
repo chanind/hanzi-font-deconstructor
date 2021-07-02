@@ -115,7 +115,7 @@ tensorify = transforms.ToTensor()
 
 
 def img_to_greyscale_tensor(img):
-    return tensorify(img)[3, :, :]
+    return tensorify(img)[3, :, :].unsqueeze(0)
 
 
 def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_threshold=0.3):
