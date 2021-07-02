@@ -115,7 +115,7 @@ tensorify = transforms.ToTensor()
 
 
 def img_to_greyscale_tensor(img):
-    return tensorify(img)[3, :, :].unsqueeze(0)
+    return tensorify(img)[3, :, :]
 
 
 def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_threshold=0.3):
@@ -144,7 +144,7 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
         for stroke_mask in stroke_masks:
             mask += stroke_mask
 
-        return (input_tensor, mask)
+        return (input_tensor.unsqueeze(0), mask)
 
 
 class RandomStrokesDataset(torch.utils.data.IterableDataset):
