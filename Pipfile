@@ -5,11 +5,11 @@ name = "pypi"
 
 [packages]
 svgwrite = "1.4.1"
-numpy = "1.21.0"
+numpy = "1.19.5"
 svgpathtools = "1.4.1"
-pillow = "8.2.0"
+pillow = "7.1.2"
 cairosvg = "2.5.2"
-tqdm = "4.61.1"
+tqdm = "4.41.1"
 
 [dev-packages]
 pytest = "6.2.4"
