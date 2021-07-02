@@ -30,13 +30,11 @@ def train_net(
     train_loader = DataLoader(
         RandomStrokesDataset(n_train, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
-        shuffle=True,
         num_workers=4,
     )
     val_loader = DataLoader(
         RandomStrokesDataset(n_val, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
-        shuffle=False,
         num_workers=4,
     )
 
