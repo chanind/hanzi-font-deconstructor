@@ -163,6 +163,6 @@ class RandomStrokesDataset(torch.utils.data.IterableDataset):
                 max_strokes=self.max_strokes, size_px=self.size_px
             )
             yield {
-                "input": input,
+                "image": input,
                 "mask": mask,
             }

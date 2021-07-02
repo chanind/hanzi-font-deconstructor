@@ -30,12 +30,12 @@ def train_net(
     train_loader = DataLoader(
         RandomStrokesDataset(n_train, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
-        num_workers=4,
+        num_workers=2,
     )
     val_loader = DataLoader(
         RandomStrokesDataset(n_val, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
-        num_workers=4,
+        num_workers=2,
     )
 
     writer = SummaryWriter(comment=f"LR_{lr}_BS_{batch_size}_SCALE_{img_scale}")
