@@ -159,6 +159,10 @@ class RandomStrokesDataset(torch.utils.data.IterableDataset):
         num_workers = worker_info.num_workers if worker_info else 1
         total_per_worker = int(self.total_samples / num_workers)
         for _ in range(total_per_worker):
-            yield get_training_input_and_mask_tensors(
+            input, mask = get_training_input_and_mask_tensors(
                 max_strokes=self.max_strokes, size_px=self.size_px
             )
+            yield {
+                "input": input,
+                "mask": mask,
+            }
