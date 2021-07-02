@@ -15,6 +15,8 @@ def train_net(
     net,
     device,
     total_samples=10000,
+    max_strokes=5,
+    size_px=512,
     epochs=5,
     batch_size=1,
     lr=0.001,
@@ -26,13 +28,13 @@ def train_net(
     n_val = int(total_samples * val_portion)
     n_train = total_samples - n_val
     train_loader = DataLoader(
-        RandomStrokesDataset(n_train),
+        RandomStrokesDataset(n_train, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
         shuffle=True,
         num_workers=4,
     )
     val_loader = DataLoader(
-        RandomStrokesDataset(n_val),
+        RandomStrokesDataset(n_val, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
         shuffle=False,
         num_workers=4,
