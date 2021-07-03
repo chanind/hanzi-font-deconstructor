@@ -1,5 +1,5 @@
 import logging
-
+import os
 from tqdm import tqdm
 import torch
 import torch.nn as nn
@@ -21,7 +21,7 @@ def train_net(
     batch_size=1,
     lr=0.001,
     val_portion=0.1,
-    # save_cp=True,
+    save_cp_dir=None,
     img_scale=1,
 ):
 
@@ -125,13 +125,15 @@ def train_net(
                             "masks/pred", torch.sigmoid(masks_pred) > 0.5, global_step
                         )
 
-        # if save_cp:
-        #     try:
-        #         os.mkdir(dir_checkpoint)
-        #         logging.info("Created checkpoint directory")
-        #     except OSError:
-        #         pass
-        #     torch.save(net.state_dict(), dir_checkpoint + f"CP_epoch{epoch + 1}.pth")
-        #     logging.info(f"Checkpoint {epoch + 1} saved !")
+        if save_cp_dir:
+            try:
+                os.mkdir(save_cp_dir)
+                logging.info("Created checkpoint directory")
+            except OSError:
+                pass
+            torch.save(
+                net.state_dict(), os.path.join(save_cp_dir + f"CP_epoch{epoch + 1}.pth")
+            )
+            logging.info(f"Checkpoint {epoch + 1} saved !")
 
     writer.close()
