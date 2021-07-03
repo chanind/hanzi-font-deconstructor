@@ -140,7 +140,7 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
             torch.where(stroke_tensor > mask_threshold, 1, 0)
             for stroke_tensor in stroke_tensors
         ]
-        mask_sums = torch.zeros(input_tensor.shape, dtype=torch.int)
+        mask_sums = torch.zeros(input_tensor.shape, dtype=torch.long)
         for stroke_mask in stroke_masks:
             mask_sums += stroke_mask
 

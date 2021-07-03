@@ -18,7 +18,7 @@ def generate_svg(
     viewboxStr = f"{viewbox[0]} {viewbox[1]} {viewbox[2]} {viewbox[3]}"
     svgPathsStr = "\n".join(svg_paths)
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="{viewboxStr}" style="width: 512px; height: 512px; border: 1px solid black;" >\n'
+        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="{viewboxStr}">\n'
         f"{svgPathsStr}\n"
         "</svg>"
     )
