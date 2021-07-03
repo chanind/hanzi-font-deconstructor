@@ -132,7 +132,7 @@ def train_net(
             except OSError:
                 pass
             torch.save(
-                net.state_dict(), os.path.join(save_cp_dir + f"CP_epoch{epoch + 1}.pth")
+                net.state_dict(), os.path.join(save_cp_dir, f"CP_epoch{epoch + 1}.pth")
             )
             logging.info(f"Checkpoint {epoch + 1} saved !")
 
