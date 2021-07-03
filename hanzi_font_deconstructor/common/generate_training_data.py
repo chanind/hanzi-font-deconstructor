@@ -140,10 +140,12 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
             torch.where(stroke_tensor > mask_threshold, 1, 0)
             for stroke_tensor in stroke_tensors
         ]
-        mask = torch.zeros(input_tensor.shape, dtype=torch.int)
+        mask_sums = torch.zeros(input_tensor.shape, dtype=torch.int)
         for stroke_mask in stroke_masks:
-            mask += stroke_mask
+            mask_sums += stroke_mask
 
+        # collapse all overlaps of more than 2 items into a single "overlap" class
+        mask = torch.where(mask_sums > 2, 2, mask_sums)
         return (input_tensor.unsqueeze(0), mask)
 
 
