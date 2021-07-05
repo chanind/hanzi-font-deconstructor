@@ -8,7 +8,6 @@ from os import path, makedirs
 from pathlib import Path
 import shutil
 import argparse
-import json
 
 PROJECT_ROOT = Path(__file__).parents[2]
 DEST_FOLDER = PROJECT_ROOT / "data"
