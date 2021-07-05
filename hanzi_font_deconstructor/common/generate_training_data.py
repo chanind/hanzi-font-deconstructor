@@ -118,9 +118,9 @@ def img_to_greyscale_tensor(img):
     return tensorify(img)[3, :, :]
 
 
-def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_threshold=0.3):
+def get_training_input_and_mask_tensors(size_px=512, mask_threshold=0.3):
     with torch.no_grad():
-        strokes = get_training_img_strokes(max_strokes)
+        strokes = get_training_img_strokes()
         strokes_attrs = [get_stroke_attrs(stroke) for stroke in strokes]
         input_svg = generate_svg(strokes_attrs, STROKE_VIEW_BOX)
         input_img = svg_to_pil(input_svg, size_px, size_px)
