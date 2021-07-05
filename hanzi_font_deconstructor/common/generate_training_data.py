@@ -81,8 +81,8 @@ MISC_SINGLE_STROKE_PATHS = [
 ]
 
 
-def get_training_img_strokes(max_strokes=5):
-    num_strokes = random.randint(1, max_strokes)
+def get_training_img_strokes():
+    num_strokes = random.randint(3, 4)
     rand_stroke_pathstrings = [
         random.choice(SINGLE_STROKE_PATHS) for _ in range(num_strokes)
     ]
@@ -147,27 +147,3 @@ def get_training_input_and_mask_tensors(max_strokes=5, size_px=512, mask_thresho
         # collapse all overlaps of more than 2 items into a single "overlap" class
         mask = torch.where(mask_sums > 2, 2, mask_sums)
         return (input_tensor.unsqueeze(0), mask)
-
-
-class RandomStrokesDataset(torch.utils.data.IterableDataset):
-    def __init__(self, total_samples: int, max_strokes=5, size_px=512):
-        super()
-        self.total_samples = total_samples
-        self.max_strokes = max_strokes
-        self.size_px = size_px
-
-    def __iter__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        num_workers = worker_info.num_workers if worker_info else 1
-        total_per_worker = int(self.total_samples / num_workers)
-        for _ in range(total_per_worker):
-            input, mask = get_training_input_and_mask_tensors(
-                max_strokes=self.max_strokes, size_px=self.size_px
-            )
-            yield {
-                "image": input,
-                "mask": mask,
-            }
-
-    def __len__(self):
-        return self.total_samples

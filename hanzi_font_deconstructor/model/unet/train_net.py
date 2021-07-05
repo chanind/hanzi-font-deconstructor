@@ -1,10 +1,12 @@
+# from https://github.com/milesial/Pytorch-UNet
+
 import logging
 import os
 from tqdm import tqdm
 import torch
 import torch.nn as nn
 from torch import optim
-from .generate_training_data import RandomStrokesDataset
+from .RandomStrokeMasksDataset import RandomStrokeMasksDataset
 from .eval_net import eval_net
 
 from torch.utils.tensorboard import SummaryWriter
@@ -28,12 +30,12 @@ def train_net(
     n_val = int(total_samples * val_portion)
     n_train = total_samples - n_val
     train_loader = DataLoader(
-        RandomStrokesDataset(n_train, max_strokes=max_strokes, size_px=size_px),
+        RandomStrokeMasksDataset(n_train, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
         num_workers=2,
     )
     val_loader = DataLoader(
-        RandomStrokesDataset(n_val, max_strokes=max_strokes, size_px=size_px),
+        RandomStrokeMasksDataset(n_val, max_strokes=max_strokes, size_px=size_px),
         batch_size=batch_size,
         num_workers=2,
     )
