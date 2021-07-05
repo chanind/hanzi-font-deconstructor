@@ -108,7 +108,6 @@ def train_net(
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True,
         num_workers=num_workers,
     )
     g_scaler = torch.cuda.amp.GradScaler()
@@ -116,7 +115,7 @@ def train_net(
     val_dataset = RandomStrokesDataset(
         int(samples_per_epoch * val_portion), size_px=size_px
     )
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=1)
 
     for epoch in range(num_epochs):
         inner_train_loop(
