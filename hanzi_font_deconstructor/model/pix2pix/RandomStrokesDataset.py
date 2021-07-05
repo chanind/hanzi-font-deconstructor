@@ -20,10 +20,7 @@ class RandomStrokesDataset(torch.utils.data.IterableDataset):
                 # convert to float, scaled between 0 - 1 (2 is the overlap mask class)
                 # unsqueeze to make a 1-channel image
                 target = mask.unsqueeze(0) / 2
-            yield {
-                "image": input,
-                "target": target,
-            }
+            yield input, target
 
     def __len__(self):
         return self.total_samples
