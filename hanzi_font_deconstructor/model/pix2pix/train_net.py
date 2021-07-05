@@ -77,6 +77,7 @@ def train_net(
     num_epochs=100,
     samples_per_epoch=2000,
     val_portion=0.01,
+    size_px=256,
 ):
     # disc = Discriminator(in_channels=3).to(config.DEVICE)
     # gen = Generator(in_channels=3, features=64).to(config.DEVICE)
@@ -103,7 +104,7 @@ def train_net(
     #         config.LEARNING_RATE,
     #     )
 
-    train_dataset = RandomStrokesDataset(samples_per_epoch)
+    train_dataset = RandomStrokesDataset(samples_per_epoch, size_px=size_px)
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -112,7 +113,9 @@ def train_net(
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = RandomStrokesDataset(int(samples_per_epoch * val_portion))
+    val_dataset = RandomStrokesDataset(
+        int(samples_per_epoch * val_portion), size_px=size_px
+    )
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(num_epochs):
