@@ -130,9 +130,10 @@ def is_stroke_good(mask, existing_masks) -> bool:
         overlaps = torch.where(existing_mask + mask >= 2, 1, 0)
         overlaps_size = torch.sum(overlaps).item()
         if overlaps_size == 0:
-            # if this is the second stroke, ensure there's an overlap
-            # we should ensure there's at least 1 overlap per training sample
-            return len(existing_masks) > 1
+            return True
+            # # if this is the second stroke, ensure there's an overlap
+            # # we should ensure there's at least 1 overlap per training sample
+            # return len(existing_masks) > 1
         # if the overlap is a large amount of either stroke, this is a bad stroke
         if overlaps_size / existing_mask_size > 0.25:
             return False
