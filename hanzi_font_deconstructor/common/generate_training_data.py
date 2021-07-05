@@ -81,18 +81,6 @@ MISC_SINGLE_STROKE_PATHS = [
 ]
 
 
-def get_training_img_strokes():
-    num_strokes = random.randint(3, 4)
-    rand_stroke_pathstrings = [
-        random.choice(SINGLE_STROKE_PATHS) for _ in range(num_strokes)
-    ]
-    transformed_strokes = [
-        transform_stroke(pathstr, STROKE_VIEW_BOX)
-        for pathstr in rand_stroke_pathstrings
-    ]
-    return transformed_strokes
-
-
 def get_file_for_char(char):
     code = hex(ord(char))[2:]
     return path.join(GLYPH_SVGS_DIR, f"{code}.svg")
@@ -118,28 +106,78 @@ def img_to_greyscale_tensor(img):
     return tensorify(img)[3, :, :]
 
 
-def get_training_input_and_mask_tensors(size_px=512, mask_threshold=0.3):
+def get_mask_span(mask):
+    "return a tuple of (horizontal span, vertical span)"
+    horiz_max_vals = torch.max(mask, 0).values
+    vert_max_vals = torch.max(mask, 1).values
+    min_x = torch.argmax(horiz_max_vals).item()
+    max_x = len(horiz_max_vals) - torch.argmax(torch.flip(horiz_max_vals, [0])).item()
+    min_y = torch.argmax(vert_max_vals).item()
+    max_y = len(vert_max_vals) - torch.argmax(torch.flip(vert_max_vals, [0])).item()
+    return (max_x - min_x, max_y - min_y)
+
+
+def is_stroke_good(mask, existing_masks) -> bool:
+    # if this is the first stroke, then anything is fine
+    if len(existing_masks) == 0:
+        return True
+
+    # TODO: this is probably really slow, might need to speed this up somehow
+    mask_size = torch.sum(mask).item()
+    mask_span = get_mask_span(mask)
+    for existing_mask in existing_masks:
+        existing_mask_size = torch.sum(existing_mask).item()
+        overlaps = torch.where(existing_mask + mask >= 2, 1, 0)
+        overlaps_size = torch.sum(overlaps).item()
+        if overlaps_size == 0:
+            # if this is the second stroke, ensure there's an overlap
+            # we should ensure there's at least 1 overlap per training sample
+            return len(existing_masks) > 1
+        # if the overlap is a large amount of either stroke, this is a bad stroke
+        if overlaps_size / existing_mask_size > 0.25:
+            return False
+        if overlaps_size / mask_size > 0.25:
+            return False
+        overlaps_span = get_mask_span(overlaps)
+        existing_mask_span = get_mask_span(existing_mask)
+        # if the overlap is a large amount of the span of either stroke, this is a bad stroke
+        if max(overlaps_span) / max(existing_mask_span) > 0.4:
+            return False
+        if max(overlaps_span) / max(mask_span) > 0.4:
+            return False
+    return True
+
+
+MASK_THRESHOLD = 0.3
+
+
+def get_training_input_svg_and_masks(size_px):
+    num_strokes = random.randint(3, 4)
     with torch.no_grad():
-        strokes = get_training_img_strokes()
-        strokes_attrs = [get_stroke_attrs(stroke) for stroke in strokes]
+        strokes_attrs = []
+        stroke_masks = []
+        while len(strokes_attrs) < num_strokes:
+            pathstr = random.choice(SINGLE_STROKE_PATHS)
+            stroke = transform_stroke(pathstr, STROKE_VIEW_BOX)
+            stroke_attrs = get_stroke_attrs(stroke)
+            stroke_svg = generate_svg([stroke_attrs], STROKE_VIEW_BOX)
+            stroke_img = svg_to_pil(stroke_svg, size_px, size_px)
+            stroke_tensor = img_to_greyscale_tensor(stroke_img)
+            stroke_mask = torch.where(stroke_tensor > MASK_THRESHOLD, 1, 0)
+
+            if is_stroke_good(stroke_mask, stroke_masks):
+                strokes_attrs.append(stroke_attrs)
+                stroke_masks.append(stroke_mask)
         input_svg = generate_svg(strokes_attrs, STROKE_VIEW_BOX)
+    return (input_svg, stroke_masks)
+
+
+def get_training_input_and_mask_tensors(size_px=256):
+    with torch.no_grad():
+        input_svg, stroke_masks = get_training_input_svg_and_masks(size_px)
+
         input_img = svg_to_pil(input_svg, size_px, size_px)
         input_tensor = img_to_greyscale_tensor(input_img)
-
-        stroke_svgs = [
-            generate_svg([stroke_attrs], STROKE_VIEW_BOX)
-            for stroke_attrs in strokes_attrs
-        ]
-        stroke_imgs = [
-            svg_to_pil(stroke_svg, size_px, size_px) for stroke_svg in stroke_svgs
-        ]
-        stroke_tensors = [
-            img_to_greyscale_tensor(stroke_img) for stroke_img in stroke_imgs
-        ]
-        stroke_masks = [
-            torch.where(stroke_tensor > mask_threshold, 1, 0)
-            for stroke_tensor in stroke_tensors
-        ]
         mask_sums = torch.zeros(input_tensor.shape, dtype=torch.long)
         for stroke_mask in stroke_masks:
             mask_sums += stroke_mask
