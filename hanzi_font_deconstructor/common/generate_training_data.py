@@ -124,7 +124,7 @@ def is_stroke_good(mask, existing_masks) -> bool:
 
     # TODO: this is probably really slow, might need to speed this up somehow
     mask_size = torch.sum(mask).item()
-    # mask_span = get_mask_span(mask)
+    mask_span = get_mask_span(mask)
     for existing_mask in existing_masks:
         existing_mask_size = torch.sum(existing_mask).item()
         overlaps = torch.where(existing_mask + mask >= 2, 1, 0)
@@ -139,13 +139,13 @@ def is_stroke_good(mask, existing_masks) -> bool:
             return False
         if overlaps_size / mask_size > 0.25:
             return False
-        # overlaps_span = get_mask_span(overlaps)
-        # existing_mask_span = get_mask_span(existing_mask)
-        # # if the overlap is a large amount of the span of either stroke, this is a bad stroke
-        # if max(overlaps_span) / max(existing_mask_span) > 0.4:
-        #     return False
-        # if max(overlaps_span) / max(mask_span) > 0.4:
-        #     return False
+        overlaps_span = get_mask_span(overlaps)
+        existing_mask_span = get_mask_span(existing_mask)
+        # if the overlap is a large amount of the span of either stroke, this is a bad stroke
+        if max(overlaps_span) / max(existing_mask_span) > 0.4:
+            return False
+        if max(overlaps_span) / max(mask_span) > 0.4:
+            return False
     return True
 
 
