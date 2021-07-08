@@ -12,6 +12,7 @@ class RandomStrokeMasksDataset(torch.utils.data.IterableDataset):
         super()
         self.total_samples = total_samples
         self.size_px = size_px
+        self.pregenerated_samples = None
         if static:
             self.pregenerated_samples = [
                 self.generate_sample() for _ in range(total_samples)
