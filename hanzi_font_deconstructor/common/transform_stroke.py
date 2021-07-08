@@ -5,7 +5,7 @@ from random import randint, uniform, gauss
 
 
 def transform_stroke(
-    stroke_pathstr: str, viewbox: Tuple[int, int, int, int]
+    stroke_pathstr: str, viewbox: Tuple[int, int, int, int], rotate_and_skew=True
 ) -> TransformedStroke:
     path = parse_path(stroke_pathstr)
     strokeMinX, strokeMaxX, strokeMinY, strokeMaxY = path.bbox()
@@ -15,11 +15,17 @@ def transform_stroke(
     strokeMidX = (strokeMaxX + strokeMinX) / 2
     strokeMidY = (strokeMaxY + strokeMinY) / 2
 
-    rotate = gauss(0, 3)
-    skewX = gauss(0, 2)
-    skewY = gauss(0, 2)
-    scaleX = min(1.05, max(0.5, gauss(0.8, 0.2)))
-    scaleY = scaleX * uniform(0.95, 1.05)
+    rotate = 0
+    skewX = 0
+    skewY = 0
+    scaleX = 1
+    scaleY = 1
+    if rotate_and_skew:
+        rotate = gauss(0, 3)
+        skewX = gauss(0, 2)
+        skewY = gauss(0, 2)
+        scaleX = min(1.05, max(0.5, gauss(0.8, 0.2)))
+        scaleY = scaleX * uniform(0.95, 1.05)
 
     # from https://stackoverflow.com/a/11671373
     baseTranslateX = (1 - scaleX) * strokeMidX

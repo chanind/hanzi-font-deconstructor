@@ -1,3 +1,5 @@
+from dataclasses import replace
+from hanzi_font_deconstructor.common.TransformedStroke import TransformedStroke
 from .generate_svg import generate_svg, get_stroke_attrs
 from .transform_stroke import transform_stroke
 from .transform_stroke import transform_stroke
@@ -13,6 +15,8 @@ from torchvision import transforms
 PROJECT_ROOT = Path(__file__).parents[2]
 GLYPH_SVGS_DIR = PROJECT_ROOT / "noto_glyphs"
 
+MASK_THRESHOLD = 0.3
+
 # https://en.wikipedia.org/wiki/Stroke_(CJK_character)
 SINGLE_STROKE_CHARS = [
     "一",
@@ -25,7 +29,7 @@ SINGLE_STROKE_CHARS = [
     "乚",
     "乛",
     "亅",
-    "𠃊",
+    # "𠃊", # This seems weird, I don't think this shows up in real chars
     "𠃋",
     "𠃌",
     "𠃍",
@@ -49,9 +53,9 @@ SINGLE_STROKE_CHARS = [
     "㇑",
     "㇚",
     "㇙",
-    "㇗",
-    "㇄",
-    "㇘",
+    # "㇗",
+    # "㇄",
+    # "㇘",
     "㇟",
     "㇞",
     "㇉",
@@ -68,8 +72,27 @@ SINGLE_STROKE_CHARS = [
     "㇁",
 ]
 
+HORIZ_STROKE_CHARS = [
+    "一",
+    "㇐",
+]
+
+VERT_STROKE_CHARS = [
+    "丨",
+    "㇑",
+]
+
+# strokes going from top left to bottom right
+BOXY_STROKE_CHARS = [
+    "𠃍",
+    "㇕",
+    "㇎",
+]
 
 STROKE_VIEW_BOX = (-10, 0, 1010, 1000)
+VIEW_BOX_WIDTH = STROKE_VIEW_BOX[2]
+VIEW_BOX_HEIGHT = STROKE_VIEW_BOX[3]
+
 MISC_SINGLE_STROKE_PATHS = [
     "M884 65l34 62c-131 40 -349 62 -523 72c-2 -18 -10 -44 -18 -61c173 -12 387 -36 507 -73z",
     "M542 409 l-60 26c-14 -47 -46 -122 -74 -178l57 -22c30 56 63 127 77 174z",
@@ -86,18 +109,27 @@ def get_file_for_char(char):
     return path.join(GLYPH_SVGS_DIR, f"{code}.svg")
 
 
-SINGLE_STROKE_CHAR_PATHS = []
 path_extractor = re.compile(r'\bd="([^"]+)"')
-for char in SINGLE_STROKE_CHARS:
+
+
+def path_for_char(char):
     char_file = get_file_for_char(char)
     with open(char_file, "r") as contents:
         char_svg = contents.read().replace("\n", "")
     path_match = path_extractor.search(char_svg)
     if not path_match:
         raise Exception(f"No SVG path found in char svg: {char}")
-    SINGLE_STROKE_CHAR_PATHS.append(path_match[1])
+    return path_match[1]
+
+
+SINGLE_STROKE_CHAR_PATHS = [path_for_char(char) for char in SINGLE_STROKE_CHARS]
+BOXY_STROKE_CHAR_PATHS = [path_for_char(char) for char in BOXY_STROKE_CHARS]
+HORIZ_STROKE_CHAR_PATHS = [path_for_char(char) for char in HORIZ_STROKE_CHARS]
+VERT_STROKE_CHAR_PATHS = [path_for_char(char) for char in VERT_STROKE_CHARS]
+
 
 SINGLE_STROKE_PATHS = MISC_SINGLE_STROKE_PATHS + SINGLE_STROKE_CHAR_PATHS
+
 
 tensorify = transforms.ToTensor()
 
@@ -106,14 +138,20 @@ def img_to_greyscale_tensor(img):
     return tensorify(img)[3, :, :]
 
 
-def get_mask_span(mask):
-    "return a tuple of (horizontal span, vertical span)"
+def get_mask_bounds(mask):
+    "return a tuple of (min_x, max_x, min_y, max_y)"
     horiz_max_vals = torch.max(mask, 0).values
     vert_max_vals = torch.max(mask, 1).values
     min_x = torch.argmax(horiz_max_vals).item()
     max_x = len(horiz_max_vals) - torch.argmax(torch.flip(horiz_max_vals, [0])).item()
     min_y = torch.argmax(vert_max_vals).item()
     max_y = len(vert_max_vals) - torch.argmax(torch.flip(vert_max_vals, [0])).item()
+    return (min_x, max_x, min_y, max_y)
+
+
+def get_mask_span(mask):
+    "return a tuple of (horizontal span, vertical span)"
+    min_x, max_x, min_y, max_y = get_mask_bounds(mask)
     return (max_x - min_x, max_y - min_y)
 
 
@@ -149,28 +187,102 @@ def is_stroke_good(mask, existing_masks) -> bool:
     return True
 
 
-MASK_THRESHOLD = 0.3
+def get_mask_and_attrs(transformed_stroke, size_px):
+    stroke_attrs = get_stroke_attrs(transformed_stroke)
+    stroke_svg = generate_svg([stroke_attrs], STROKE_VIEW_BOX)
+    stroke_img = svg_to_pil(stroke_svg, size_px, size_px)
+    stroke_tensor = img_to_greyscale_tensor(stroke_img)
+    stroke_mask = torch.where(stroke_tensor > MASK_THRESHOLD, 1, 0)
+    return (stroke_mask, stroke_attrs)
 
 
 def get_training_input_svg_and_masks(size_px):
+    """
+    Create a single training example
+    """
     num_strokes = random.randint(3, 4)
     with torch.no_grad():
         strokes_attrs = []
         stroke_masks = []
+        # for 5% of training examples, make sure there's a boxy shape involved
+        if random.random() <= 0.05:
+            strokes_attrs, stroke_masks = create_boxy_strokes(size_px)
+
         while len(strokes_attrs) < num_strokes:
             pathstr = random.choice(SINGLE_STROKE_PATHS)
             stroke = transform_stroke(pathstr, STROKE_VIEW_BOX)
-            stroke_attrs = get_stroke_attrs(stroke)
-            stroke_svg = generate_svg([stroke_attrs], STROKE_VIEW_BOX)
-            stroke_img = svg_to_pil(stroke_svg, size_px, size_px)
-            stroke_tensor = img_to_greyscale_tensor(stroke_img)
-            stroke_mask = torch.where(stroke_tensor > MASK_THRESHOLD, 1, 0)
+            stroke_mask, stroke_attrs = get_mask_and_attrs(stroke, size_px)
 
             if is_stroke_good(stroke_mask, stroke_masks):
                 strokes_attrs.append(stroke_attrs)
                 stroke_masks.append(stroke_mask)
         input_svg = generate_svg(strokes_attrs, STROKE_VIEW_BOX)
     return (input_svg, stroke_masks)
+
+
+def create_boxy_strokes(size_px):
+    """
+    boxy strokes like in 口 or 户 really confuse the algorithm and are unlikely to form by randomly placing strokes.
+    This function explicitly tries to generate samples like this
+    """
+    horiz_stroke_path = random.choice(HORIZ_STROKE_CHAR_PATHS)
+    vert_stroke_path = random.choice(VERT_STROKE_CHAR_PATHS)
+    boxy_stroke_path = random.choice(BOXY_STROKE_CHAR_PATHS)
+
+    boxy_stroke = transform_stroke(
+        boxy_stroke_path, STROKE_VIEW_BOX, rotate_and_skew=False
+    )
+    vert_stroke = transform_stroke(
+        vert_stroke_path, STROKE_VIEW_BOX, rotate_and_skew=False
+    )
+    horiz_stroke = transform_stroke(
+        horiz_stroke_path, STROKE_VIEW_BOX, rotate_and_skew=False
+    )
+
+    boxy_mask, boxy_attrs = get_mask_and_attrs(boxy_stroke, size_px)
+    vert_mask, _ = get_mask_and_attrs(vert_stroke, size_px)
+    horiz_mask, _ = get_mask_and_attrs(horiz_stroke, size_px)
+
+    boxy_bounds = get_mask_bounds(boxy_mask)
+    vert_bounds = get_mask_bounds(vert_mask)
+    horiz_bounds = get_mask_bounds(horiz_mask)
+
+    x_ratio = VIEW_BOX_WIDTH / size_px
+    y_ratio = VIEW_BOX_HEIGHT / size_px
+
+    # try to align the vert stroke to the top left of the boxy stroke
+    vert_delta_x = (boxy_bounds[0] - vert_bounds[0]) * x_ratio + random.gauss(0, 20)
+    vert_delta_y = (boxy_bounds[2] - vert_bounds[2]) * y_ratio + random.gauss(0, 3)
+
+    updated_vert_stroke = replace(
+        vert_stroke,
+        translate=(
+            vert_stroke.translate[0] + vert_delta_x,
+            vert_stroke.translate[1] + vert_delta_y,
+        ),
+    )
+    updated_vert_mask, updated_vert_attrs = get_mask_and_attrs(
+        updated_vert_stroke, size_px
+    )
+
+    # try to align the horizontal stroke with the bottom right of the boxy stroke
+    horiz_delta_x = (boxy_bounds[1] - horiz_bounds[1]) * x_ratio + random.gauss(0, 3)
+    horiz_delta_y = (boxy_bounds[3] - horiz_bounds[3]) * y_ratio + random.gauss(0, 20)
+
+    updated_horiz_stroke = replace(
+        horiz_stroke,
+        translate=(
+            horiz_stroke.translate[0] + horiz_delta_x,
+            horiz_stroke.translate[1] + horiz_delta_y,
+        ),
+    )
+    updated_horiz_mask, updated_horiz_attrs = get_mask_and_attrs(
+        updated_horiz_stroke, size_px
+    )
+
+    stroke_masks = [boxy_mask, updated_vert_mask, updated_horiz_mask]
+    strokes_attrs = [boxy_attrs, updated_vert_attrs, updated_horiz_attrs]
+    return (strokes_attrs, stroke_masks)
 
 
 def get_training_input_and_mask_tensors(size_px=256):

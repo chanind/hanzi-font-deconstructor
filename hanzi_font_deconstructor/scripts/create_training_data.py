@@ -3,7 +3,6 @@ from hanzi_font_deconstructor.common.generate_training_data import (
     STROKE_VIEW_BOX,
     get_training_input_svg_and_masks,
 )
-from hanzi_font_deconstructor.common.generate_svg import generate_svg, get_stroke_attrs
 from os import path, makedirs
 from pathlib import Path
 import shutil

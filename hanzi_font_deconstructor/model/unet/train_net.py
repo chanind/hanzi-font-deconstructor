@@ -23,24 +23,23 @@ def train_net(
     lr=0.001,
     val_portion=0.1,
     save_cp_dir=None,
-    img_scale=1,
     num_workers=2,
 ):
 
     n_val = int(total_samples * val_portion)
     n_train = total_samples - n_val
     train_loader = DataLoader(
-        RandomStrokeMasksDataset(n_train, size_px=size_px),
+        RandomStrokeMasksDataset(n_train, size_px=size_px, static=False),
         batch_size=batch_size,
         num_workers=num_workers,
     )
     val_loader = DataLoader(
-        RandomStrokeMasksDataset(n_val, size_px=size_px),
+        RandomStrokeMasksDataset(n_val, size_px=size_px, static=True),
         batch_size=batch_size,
         num_workers=num_workers,
     )
 
-    writer = SummaryWriter(comment=f"LR_{lr}_BS_{batch_size}_SCALE_{img_scale}")
+    writer = SummaryWriter(comment=f"LR_{lr}_BS_{batch_size}")
     global_step = 0
 
     logging.info(
@@ -51,7 +50,6 @@ def train_net(
         Training size:   {n_train}
         Validation size: {n_val}
         Device:          {device.type}
-        Images scaling:  {img_scale}
     """
     )
 
