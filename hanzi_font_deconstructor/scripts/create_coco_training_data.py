@@ -8,6 +8,7 @@ from json import dump
 import shutil
 import argparse
 import cv2
+from tqdm import tqdm
 import numpy as np
 
 from hanzi_font_deconstructor.common.svg_to_pil import svg_to_pil
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     coco_contents = {"categories": categories, "images": [], "annotations": []}
 
     annotation_counter = 0
-    for i in range(args.total_images):
+    for i in tqdm(range(args.total_images)):
         (img_svg, stroke_masks) = get_training_input_svg_and_masks(args.image_size)
         img_filename = f"images/{i}-{len(stroke_masks)}.png"
         img_elem = {
@@ -51,14 +52,13 @@ if __name__ == "__main__":
             width = max_x - min_x
             height = max_y - min_y
 
-            area = width * height
+            # area = width * height
             # poly = [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
 
             cv_stroke_mask = stroke_mask.unsqueeze(-1).numpy().astype(np.uint8)
             contours = cv2.findContours(
                 cv_stroke_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            import pdb
 
             poly = contours[0][0][:, 0, :].flatten().tolist()
 
@@ -77,7 +77,6 @@ if __name__ == "__main__":
 
         img = svg_to_pil(img_svg, args.image_size, args.image_size)
         img.save(DEST_FOLDER / img_filename, format="png")
-        print(".")
     with open(DEST_FOLDER / "data.json", "w") as coco_data_file:
         dump(coco_contents, coco_data_file, ensure_ascii=False, indent=2)
     print("Done!")
