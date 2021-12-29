@@ -58,8 +58,7 @@ if __name__ == "__main__":
                 min_x, max_x, min_y, max_y = get_mask_bounds(stroke_mask)
                 width = max_x - min_x
                 height = max_y - min_y
-
-                # area = width * height
+                area = stroke_mask.sum().item()
                 # poly = [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
 
                 cv_stroke_mask = stroke_mask.unsqueeze(-1).numpy().astype(np.uint8)
@@ -77,7 +76,7 @@ if __name__ == "__main__":
                     "ignore": 0,
                     "category_id": 0,
                     "iscrowd": 0,
-                    # "area": float(area),
+                    "area": float(area),
                 }
                 coco_contents["annotations"].append(annot_elem)
                 annotation_counter += 1
